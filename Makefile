@@ -13,7 +13,7 @@ build:
 ## Install to /usr/local/bin
 install: build
 	@sudo mv $(BINARY) /usr/local/bin/$(BINARY)
-	@echo "[+] installed → /usr/local/bin/kon"
+	@echo "[+] installed -> /usr/local/bin/kon"
 
 ## Build linux amd64
 linux:

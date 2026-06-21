@@ -8,46 +8,77 @@ import (
 	"time"
 )
 
-// ─── ANSI ────────────────────────────────────────────────────────────────────
+// ─── ANSI ──────────────────────────────────────────────────────────────
+//
+// Palette: we use a restricted set so every message feels cohesive.
+//
+//	Info / neutral  → dim white  (colorDim)
+//	Success         → green      (colorGreen)
+//	Warning         → dim cyan   (colorCyan)   ← replaces harsh yellow
+//	Error / danger  → red 196    (colorRed)
+//	Accent / meta   → purple 135 (colorPurple)
+//	Bold label      → bold white (colorBold)
 
 const (
 	colorCyan   = "\033[0;36m"
 	colorGreen  = "\033[0;32m"
 	colorRed    = "\033[0;31m"
-	colorYellow = "\033[1;33m"
 	colorPurple = "\033[0;35m"
 	colorDim    = "\033[2m"
 	colorBold   = "\033[1m"
 	colorReset  = "\033[0m"
+
+	// Named palette entries — internal
+	clrInfo  = "\033[38;5;196m" // bright red  — section headers / [Info]
+	clrOk    = "\033[38;5;82m"  // bright green
+	clrWarn  = "\033[0;36m"     // cyan        — softer than yellow
+	clrErr   = "\033[0;31m"     // red
+	clrMeta  = "\033[38;5;135m" // purple      — [Meta] labels
+	clrAcct  = "\033[38;5;160m" // mid red     — sub-labels
+	clrDim   = "\033[2m"
+	clrBold  = "\033[1m"
+	clrReset = "\033[0m"
 )
 
-// Red gradient palette (dark → bright)
+// Exported color strings — other packages may use these for inline formatting.
+const (
+	ClrOk     = "\033[38;5;82m"
+	ClrWarn   = "\033[0;36m"
+	ClrErr    = "\033[0;31m"
+	ClrInfo   = "\033[38;5;196m"
+	ClrMeta   = "\033[38;5;135m"
+	ClrDimStr = "\033[2m"
+	ClrReset  = "\033[0m"
+)
+
+// Red gradient palette (dark → bright) — used only in ASCII art
 var reds = []string{"52", "88", "124", "160", "196", "203"}
 
-// ─── Print helpers ────────────────────────────────────────────────────────────
+// ─── Print helpers ───────────────────────────────────────────────────
 
 func Info(msg string) {
-	fmt.Printf("  %s[*]%s %s\n", colorCyan, colorReset, msg)
+	fmt.Printf("  %s[*]%s %s\n", clrInfo, clrReset, msg)
 }
 
 func Ok(msg string) {
-	fmt.Printf("  %s[+]%s %s\n", colorGreen, colorReset, msg)
+	fmt.Printf("  %s[+]%s %s\n", clrOk, clrReset, msg)
 }
 
 func Error(msg string) {
-	fmt.Fprintf(os.Stderr, "  %s[!]%s %s\n", colorRed, colorReset, msg)
+	fmt.Fprintf(os.Stderr, "  %s[!]%s %s\n", clrErr, clrReset, msg)
 }
 
+// Warn uses cyan instead of yellow — fits the red/cyan palette without clashing.
 func Warn(msg string) {
-	fmt.Printf("  %s[~]%s %s\n", colorYellow, colorReset, msg)
+	fmt.Printf("  %s[~]%s %s\n", clrWarn, clrReset, msg)
 }
 
 func Dim(msg string) {
-	fmt.Printf("  %s%s%s\n", colorDim, msg, colorReset)
+	fmt.Printf("  %s%s%s\n", clrDim, msg, clrReset)
 }
 
 func Bold(msg string) {
-	fmt.Printf("  %s%s%s\n", colorBold, msg, colorReset)
+	fmt.Printf("  %s%s%s\n", clrBold, msg, clrReset)
 }
 
 func Blank() {
@@ -55,23 +86,23 @@ func Blank() {
 }
 
 func Divider() {
-	fmt.Printf("  %s%s%s\n", colorDim, strings.Repeat("─", 44), colorReset)
+	fmt.Printf("  %s%s%s\n", clrDim, strings.Repeat("─", 48), clrReset)
 }
 
-// KV prints a key → value pair, aligned.
+// KV prints a key · value pair, aligned.
 func KV(key, value, valueColor string) {
 	fmt.Printf("  %s%-10s%s %s·%s  %s%s%s\n",
-		colorDim, key, colorReset,
-		colorDim, colorReset,
-		valueColor, value, colorReset,
+		clrDim, key, clrReset,
+		clrDim, clrReset,
+		valueColor, value, clrReset,
 	)
 }
 
-// ─── ASCII art helper ─────────────────────────────────────────────────────────
+// ─── ASCII art ───────────────────────────────────────────────────────
 
 func printAsciiArt() {
 	artLines := []string{
-		"     ┌──┐┌──┐┌───────┐┌──┐ ┌──┐",
+		"     ┌──┐┌──┐┌───────┐┌──┐┌──┐",
 		"     │  └┘  ││   ┬   ││  └─┤  │",
 		"     │    ┌─┘│   │   ││  ┌─┘  │",
 		"     │  ┌┐  ││   ┴   ││  │└┐  │",
@@ -89,64 +120,61 @@ func printAsciiArt() {
 	}
 }
 
-// ─── Banner (status / stop / logs / delete / version) ────────────────────────
-// Sin "Isolated" — solo art + meta
+// ─── Banner ──────────────────────────────────────────────────────────
 
 func Banner() {
 	fmt.Println()
 	printAsciiArt()
 	fmt.Println()
-	fmt.Printf("  \033[38;5;135m[Meta]\033[0m Created by z1rov\n")
-	fmt.Printf("  \033[38;5;135m[Meta]\033[0m \033[2mhttps://zirov.xyz\033[0m\n")
+	fmt.Printf("  %s[Meta]%s Created by z1rov\n", clrMeta, clrReset)
+	fmt.Printf("  %s[Meta]%s %shttps://zirov.xyz%s\n", clrMeta, clrReset, clrDim, clrReset)
 	fmt.Println()
 }
 
-// ─── StartScreen (kon start — typewriter + info block) ───────────────────────
+// ─── StartScreen — typewriter "Isolated" only here ──────────────────
 
 func StartScreen(anvil string) {
 	fmt.Println()
 	printAsciiArt()
 
-	// "Isolated" — letra a letra, amarillo, solo en start
 	fmt.Printf("        ")
-	word := "Isolated"
-	for _, ch := range word {
+	for _, ch := range "Isolated" {
 		fmt.Printf("\033[38;5;226m%c\033[0m", ch)
 		time.Sleep(80 * time.Millisecond)
 	}
 	fmt.Printf("\n\n")
 
-	fmt.Printf("  \033[38;5;135m[Meta]\033[0m Created by z1rov\n")
-	fmt.Printf("  \033[38;5;135m[Meta]\033[0m \033[2mhttps://zirov.xyz\033[0m\n")
+	fmt.Printf("  %s[Meta]%s Created by z1rov\n", clrMeta, clrReset)
+	fmt.Printf("  %s[Meta]%s %shttps://zirov.xyz%s\n", clrMeta, clrReset, clrDim, clrReset)
 	fmt.Println()
-	fmt.Printf("  \033[38;5;196m[Info]\033[0m Initializing container services:\n")
-	fmt.Printf("  \033[38;5;160m[%-13s]\033[0m\033[2m::Network    host\033[0m\n", "host")
-	fmt.Printf("  \033[38;5;124m[%-13s]\033[0m\033[2m::Mount      /anvil\033[0m\n", anvil)
+	fmt.Printf("  %s[Info]%s Initializing container services:\n", clrInfo, clrReset)
+	fmt.Printf("  %s[%-13s]%s%s::Network    host%s\n", clrInfo, "host", clrReset, clrDim, clrReset)
+	fmt.Printf("  %s[%-13s]%s%s::Mount      /anvil → %s%s\n", clrAcct, "mount", clrReset, clrDim, anvil, clrReset)
 	fmt.Println()
-	fmt.Printf("  \033[38;5;196m[Info]\033[0m \033[1mWelcome! Good luck with your pentesting ;)\033[0m\n")
-	fmt.Printf("  %s%s%s\n\n", colorDim, strings.Repeat("─", 48), colorReset)
+	fmt.Printf("  %s[Info]%s %sWelcome! Good luck with your pentesting ;)%s\n", clrInfo, clrReset, clrBold, clrReset)
+	Divider()
+	fmt.Println()
 }
 
-// ─── GoodbyeScreen (shown when container exits) ──────────────────────────────
+// ─── GoodbyeScreen ───────────────────────────────────────────────────
 
 func GoodbyeScreen() {
 	fmt.Println()
-	fmt.Printf("  \033[38;5;196m[kon]\033[0m \033[1mSession ended.\033[0m\n")
-	fmt.Printf("  %s[*]%s Hope the hunt was good. Stay safe out there.\n", colorDim, colorReset)
+	fmt.Printf("  %s[kon]%s %sSession ended.%s\n", clrInfo, clrReset, clrBold, clrReset)
+	fmt.Printf("  %s[*]%s Hope the hunt was good. Stay safe out there.\n", clrDim, clrReset)
 	fmt.Println()
 }
 
-// ─── Spinner ──────────────────────────────────────────────────────────────────
+// ─── Spinner ─────────────────────────────────────────────────────────
 
-type spinner struct {
+type Spinner struct {
 	label string
 	stop  chan struct{}
 	wg    sync.WaitGroup
 }
 
-// NewSpinner starts an animated spinner. Call .Stop() when done.
-func NewSpinner(label string) *spinner {
-	s := &spinner{
+func NewSpinner(label string) *Spinner {
+	s := &Spinner{
 		label: label,
 		stop:  make(chan struct{}),
 	}
@@ -155,7 +183,7 @@ func NewSpinner(label string) *spinner {
 	return s
 }
 
-func (s *spinner) run() {
+func (s *Spinner) run() {
 	defer s.wg.Done()
 	frames := []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
 	i := 0
@@ -165,39 +193,39 @@ func (s *spinner) run() {
 			fmt.Printf("\r\033[K")
 			return
 		default:
-			fmt.Printf("\r  \033[38;5;196m%s\033[0m  %s%s%s",
-				frames[i%len(frames)],
-				colorDim, s.label, colorReset)
+			fmt.Printf("\r  %s%s%s  %s%s%s",
+				clrInfo, frames[i%len(frames)], clrReset,
+				clrDim, s.label, clrReset)
 			i++
 			time.Sleep(80 * time.Millisecond)
 		}
 	}
 }
 
-func (s *spinner) Stop() {
+func (s *Spinner) Stop() {
 	close(s.stop)
 	s.wg.Wait()
 }
 
-// ─── Layer progress (docker pull) ────────────────────────────────────────────
+// ─── Layer progress (docker pull) ───────────────────────────────────
 
 func LayerLine(id, status string) {
-	color := colorDim
+	color := clrDim
 	icon := "·"
 
 	lower := strings.ToLower(status)
 	switch {
 	case strings.Contains(lower, "pull complete"), strings.Contains(lower, "already exists"):
-		color = colorGreen
+		color = clrOk
 		icon = "✓"
 	case strings.Contains(lower, "pulling"):
 		color = colorCyan
 		icon = "↓"
 	case strings.Contains(lower, "extract"):
-		color = colorYellow
+		color = colorPurple
 		icon = "⧗"
 	case strings.Contains(lower, "verif"):
-		color = colorPurple
+		color = clrMeta
 		icon = "◈"
 	}
 
@@ -205,20 +233,20 @@ func LayerLine(id, status string) {
 	if len(id) > 12 {
 		short = id[:12]
 	}
-	fmt.Printf("  %s%s  %-14s  %s%s\n", color, icon, short, status, colorReset)
+	fmt.Printf("  %s%s  %-14s  %s%s\n", color, icon, short, status, clrReset)
 }
 
-// ─── Usage ────────────────────────────────────────────────────────────────────
+// ─── Usage ───────────────────────────────────────────────────────────
 
 func Usage() {
 	fmt.Println()
 	printAsciiArt()
 	fmt.Printf("        \033[38;5;226mIsolated\033[0m\n\n")
 
-	fmt.Printf("  \033[38;5;135m[Meta]\033[0m Created by z1rov\n")
-	fmt.Printf("  \033[38;5;135m[Meta]\033[0m \033[2mhttps://zirov.xyz\033[0m\n")
+	fmt.Printf("  %s[Meta]%s Created by z1rov\n", clrMeta, clrReset)
+	fmt.Printf("  %s[Meta]%s %shttps://zirov.xyz%s\n", clrMeta, clrReset, clrDim, clrReset)
 	fmt.Println()
-	fmt.Printf("  \033[38;5;196m[Info]\033[0m Usage: kon <command>\n")
+	fmt.Printf("  %s[Info]%s Usage: kon <command>\n", clrInfo, clrReset)
 	fmt.Println()
 
 	type entry struct{ cmd, desc string }
@@ -257,71 +285,97 @@ func Usage() {
 
 	for _, g := range groups {
 		for _, e := range g.entries {
-			fmt.Printf("  \033[38;5;%sm[%-13s]\033[0m\033[2m::\033[0m %s%-14s%s %s%s%s\n",
+			fmt.Printf("  \033[38;5;%sm[%-13s]\033[0m%s::%s %s%-14s%s %s%s%s\n",
 				g.color, g.title,
-				colorBold, e.cmd, colorReset,
-				colorDim, e.desc, colorReset)
+				clrDim, clrReset,
+				clrBold, e.cmd, clrReset,
+				clrDim, e.desc, clrReset)
 		}
 	}
 
 	fmt.Println()
-	fmt.Printf("  %s%s%s\n\n", colorDim, strings.Repeat("─", 48), colorReset)
+	Divider()
+	fmt.Println()
 }
 
-// ─── VersionScreen ────────────────────────────────────────────────────────────
+// ─── VersionScreen ───────────────────────────────────────────────────
 
 func VersionScreen(local string, localOk bool, remote string, remoteOk bool) {
 	Banner()
-	fmt.Printf("  \033[38;5;196m[Info]\033[0m Checking version:\n")
+	fmt.Printf("  %s[Info]%s Checking version:\n", clrInfo, clrReset)
 	fmt.Println()
 
-	localVal, localColor := local, "82"
+	localVal, localColor := local, clrOk
 	if !localOk {
-		localVal, localColor = "not installed", "196"
+		localVal, localColor = "not installed", clrErr
 	}
-	fmt.Printf("  \033[38;5;160m[%-13s]\033[0m\033[2m::\033[0m \033[38;5;%sm%s\033[0m\n",
-		"local", localColor, localVal)
+	fmt.Printf("  %s[%-13s]%s%s::%s %s%s%s\n",
+		clrAcct, "local", clrReset, clrDim, clrReset, localColor, localVal, clrReset)
 
-	remoteVal, remoteColor := remote, "220"
+	remoteVal, remoteColor := remote, clrWarn
 	if !remoteOk {
-		remoteVal, remoteColor = "unavailable", "196"
+		remoteVal, remoteColor = "unavailable", clrErr
 	}
-	fmt.Printf("  \033[38;5;135m[%-13s]\033[0m\033[2m::\033[0m \033[38;5;%sm%s\033[0m\n",
-		"remote", remoteColor, remoteVal)
+	fmt.Printf("  %s[%-13s]%s%s::%s %s%s%s\n",
+		clrMeta, "remote", clrReset, clrDim, clrReset, remoteColor, remoteVal, clrReset)
 
 	fmt.Println()
 
 	if localOk && remoteOk {
 		if local == remote {
-			fmt.Printf("  \033[38;5;196m[Info]\033[0m \033[1mup to date\033[0m\n")
+			fmt.Printf("  %s[Info]%s %sup to date%s\n", clrInfo, clrReset, clrBold, clrReset)
 		} else {
-			fmt.Printf("  \033[38;5;220m[Warn]\033[0m \033[1mupdate available: %s → %s — run: kon update\033[0m\n", local, remote)
+			fmt.Printf("  %s[Warn]%s %supdate available: %s → %s — run: kon update%s\n",
+				clrWarn, clrReset, clrBold, local, remote, clrReset)
 		}
 	}
 
-	fmt.Printf("  %s%s%s\n\n", colorDim, strings.Repeat("─", 48), colorReset)
+	fmt.Println()
+	Divider()
+	fmt.Println()
 }
 
-// ─── Start / Stop messages ────────────────────────────────────────────────────
+// ─── Start / Stop messages ───────────────────────────────────────────
 
 func StartHeader() {
-	fmt.Printf("  \033[38;5;196m[+]\033[0m %sstarting kon container%s\n", colorBold, colorReset)
+	fmt.Printf("  %s[+]%s %sstarting kon container%s\n", clrOk, clrReset, clrBold, clrReset)
 }
 
 func StartDetail(label, value string) {
-	fmt.Printf("  \033[38;5;160m[•]\033[0m %s%-10s%s %s%s\n",
-		colorDim, label+":", colorReset,
-		colorCyan, value)
+	fmt.Printf("  %s[·]%s %s%-10s%s %s%s%s\n",
+		clrDim, clrReset, clrDim, label+":", clrReset, colorCyan, value, clrReset)
 }
 
 func StartDone() {
-	fmt.Printf("  %s[✓]%s %scontainer ready%s\n", colorGreen, colorReset, colorBold, colorReset)
+	fmt.Printf("  %s[✓]%s %scontainer ready%s\n", clrOk, clrReset, clrBold, clrReset)
 }
 
 func StopHeader() {
-	fmt.Printf("  \033[38;5;220m[~]\033[0m %sstopping kon container%s\n", colorBold, colorReset)
+	fmt.Printf("  %s[~]%s %sstopping kon container%s\n", clrWarn, clrReset, clrBold, clrReset)
 }
 
 func StopDone() {
-	fmt.Printf("  %s[+]%s %scontainer stopped%s\n", colorGreen, colorReset, colorBold, colorReset)
+	fmt.Printf("  %s[+]%s %scontainer stopped%s\n", clrOk, clrReset, clrBold, clrReset)
+}
+
+// ─── Storage migration helpers ───────────────────────────────────────
+
+func StorageStep(msg string) {
+	fmt.Printf("\n  %s[·]%s %s%s%s\n", clrMeta, clrReset, clrBold, msg, clrReset)
+}
+
+func StorageOk(msg string) {
+	fmt.Printf("  %s[✓]%s %s\n", clrOk, clrReset, msg)
+}
+
+func StorageWarn(msg string) {
+	fmt.Printf("  %s[~]%s %s\n", clrWarn, clrReset, msg)
+}
+
+func StorageErr(msg string) {
+	fmt.Fprintf(os.Stderr, "  %s[!]%s %s\n", clrErr, clrReset, msg)
+}
+
+func StorageKV(label, value string) {
+	fmt.Printf("  %s  %-18s%s %s\n", clrDim, label, clrReset, value)
 }

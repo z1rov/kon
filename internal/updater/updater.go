@@ -11,10 +11,11 @@ import (
 
 	"github.com/z1rov/kon/internal/config"
 	"github.com/z1rov/kon/internal/docker"
+	"github.com/z1rov/kon/internal/storage"
 	"github.com/z1rov/kon/internal/ui"
 )
 
-// ─── Install ──────────────────────────────────────────────────────────────────
+// ─── Install ─────────────────────────────────────────────────────────
 
 func Install() {
 	spin := ui.NewSpinner("fetching version")
@@ -22,7 +23,14 @@ func Install() {
 	spin.Stop()
 
 	ui.Banner()
-	fmt.Printf("  \033[38;5;196m[Info]\033[0m installing %s\n", config.ImageName)
+	fmt.Printf("  %s[Info]%s installing %s\n\n", ui.ClrInfo, ui.ClrReset, config.ImageName)
+
+	// Check / migrate storage before pulling
+	ui.StorageStep("Checking available disk space…")
+	if err := storage.EnsureSpace(); err != nil {
+		ui.StorageWarn("storage check failed: " + err.Error())
+		// Non-fatal: attempt pull anyway
+	}
 	fmt.Println()
 
 	if err := docker.Pull(); err != nil {
@@ -31,13 +39,17 @@ func Install() {
 	}
 
 	fmt.Println()
-	fmt.Printf("  \033[38;5;135m[%-13s]\033[0m\033[2m::\033[0m \033[38;5;82m%s\033[0m\n", "version", remote)
+	fmt.Printf("  %s[%-13s]%s%s::%s %s%s%s\n",
+		ui.ClrMeta, "version", ui.ClrReset,
+		ui.ClrDimStr, ui.ClrReset,
+		ui.ClrOk, remote, ui.ClrReset)
 	fmt.Println()
 	ui.Ok("kon installed — run: kon start")
-	fmt.Printf("  \033[2m%s\033[0m\n\n", strings.Repeat("─", 48))
+	ui.Divider()
+	fmt.Println()
 }
 
-// ─── Update ───────────────────────────────────────────────────────────────────
+// ─── Update ──────────────────────────────────────────────────────────
 
 func Update() {
 	spin := ui.NewSpinner("checking versions")
@@ -46,32 +58,53 @@ func Update() {
 	spin.Stop()
 
 	ui.Banner()
-	fmt.Printf("  \033[38;5;196m[Info]\033[0m checking for updates\n")
-	fmt.Println()
+	fmt.Printf("  %s[Info]%s checking for updates\n\n", ui.ClrInfo, ui.ClrReset)
 
 	if errR != nil {
 		ui.Error("could not reach remote: " + errR.Error())
 		os.Exit(1)
 	}
 	if errL != nil {
-		fmt.Printf("  \033[38;5;160m[%-13s]\033[0m\033[2m::\033[0m \033[0;31m%s\033[0m\n", "local", "not installed")
+		fmt.Printf("  %s[%-13s]%s%s::%s %s%s%s\n",
+			ui.ClrErr, "local", ui.ClrReset,
+			ui.ClrDimStr, ui.ClrReset,
+			ui.ClrErr, "not installed", ui.ClrReset)
 		fmt.Println()
 		ui.Warn("no local image found — run: kon install")
-		fmt.Printf("  \033[2m%s\033[0m\n\n", strings.Repeat("─", 48))
+		ui.Divider()
+		fmt.Println()
 		os.Exit(1)
 	}
 
-	fmt.Printf("  \033[38;5;160m[%-13s]\033[0m\033[2m::\033[0m \033[0;36m%s\033[0m\n", "local", local)
-	fmt.Printf("  \033[38;5;135m[%-13s]\033[0m\033[2m::\033[0m \033[38;5;220m%s\033[0m\n", "remote", remote)
+	fmt.Printf("  %s[%-13s]%s%s::%s %s%s%s\n",
+		ui.ClrInfo, "local", ui.ClrReset,
+		ui.ClrDimStr, ui.ClrReset,
+		ui.ClrWarn, local, ui.ClrReset)
+	fmt.Printf("  %s[%-13s]%s%s::%s %s%s%s\n",
+		ui.ClrMeta, "remote", ui.ClrReset,
+		ui.ClrDimStr, ui.ClrReset,
+		ui.ClrOk, remote, ui.ClrReset)
 	fmt.Println()
 
 	if local == remote {
-		fmt.Printf("  \033[38;5;196m[Info]\033[0m \033[1malready up to date\033[0m\n")
-		fmt.Printf("  \033[2m%s\033[0m\n\n", strings.Repeat("─", 48))
+		fmt.Printf("  %s[Info]%s %salready up to date%s\n",
+			ui.ClrInfo, ui.ClrReset, ui.ClrInfo, ui.ClrReset)
+		ui.Divider()
+		fmt.Println()
 		return
 	}
 
-	fmt.Printf("  \033[38;5;220m[Warn]\033[0m update available: \033[0;36m%s\033[0m → \033[38;5;82m%s\033[0m\n", local, remote)
+	fmt.Printf("  %s[~]%s update available: %s%s%s → %s%s%s\n",
+		ui.ClrWarn, ui.ClrReset,
+		ui.ClrWarn, local, ui.ClrReset,
+		ui.ClrOk, remote, ui.ClrReset)
+	fmt.Println()
+
+	// Check / migrate storage before pulling the new image
+	ui.StorageStep("Checking available disk space…")
+	if err := storage.EnsureSpace(); err != nil {
+		ui.StorageWarn("storage check failed: " + err.Error())
+	}
 	fmt.Println()
 
 	if err := docker.Pull(); err != nil {
@@ -79,16 +112,22 @@ func Update() {
 		os.Exit(1)
 	}
 
+	// Aggressive cleanup: remove ALL dangling images, not just one.
 	fmt.Println()
-	fmt.Printf("  \033[38;5;196m[Info]\033[0m cleaning up old images...\n")
+	fmt.Printf("  %s[Info]%s Cleaning up old image layers…\n", ui.ClrInfo, ui.ClrReset)
 	docker.PruneImages()
 
 	fmt.Println()
-	fmt.Printf("  \033[0;32m[+]\033[0m \033[1mupdated\033[0m \033[0;36m%s\033[0m → \033[38;5;82m%s\033[0m\n", local, remote)
-	fmt.Printf("  \033[2m%s\033[0m\n\n", strings.Repeat("─", 48))
+	fmt.Printf("  %s[+]%s %supdated%s %s%s%s → %s%s%s\n",
+		ui.ClrOk, ui.ClrReset,
+		ui.ClrInfo, ui.ClrReset,
+		ui.ClrWarn, local, ui.ClrReset,
+		ui.ClrOk, remote, ui.ClrReset)
+	ui.Divider()
+	fmt.Println()
 }
 
-// ─── Version ──────────────────────────────────────────────────────────────────
+// ─── Version ─────────────────────────────────────────────────────────
 
 func Version() {
 	spin := ui.NewSpinner("fetching versions")
@@ -99,7 +138,7 @@ func Version() {
 	ui.VersionScreen(local, errL == nil, remote, errR == nil)
 }
 
-// ─── Version helpers ──────────────────────────────────────────────────────────
+// ─── Version helpers ─────────────────────────────────────────────────
 
 func RemoteVersion() (string, error) {
 	client := &http.Client{Timeout: 10 * time.Second}

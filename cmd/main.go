@@ -16,7 +16,7 @@ func main() {
 
 	switch os.Args[1] {
 
-	// ─── Container ────────────────────────────────────────────────────────────
+	// ─── Container ─────────────────────────────────────────────────
 	case "start":
 		docker.Start()
 
@@ -37,20 +37,20 @@ func main() {
 		}
 		docker.Exec(os.Args[2:])
 
-	// ─── Image ────────────────────────────────────────────────────────────────
+	// ─── Image ──────────────────────────────────────────────────────
 	case "install":
 		updater.Install()
 
 	case "update":
 		updater.Update()
-	
+
 	case "delete":
-		docker.PruneImages()
+		docker.FullCleanup()
 
 	case "version":
 		updater.Version()
 
-	// ─── General ─────────────────────────────────────────────────────────────
+	// ─── General ────────────────────────────────────────────────────
 	case "help", "--help", "-h":
 		ui.Usage()
 
