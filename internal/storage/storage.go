@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	MinFreeGB     = 20 // minimum free space required on target mount
+	MinFreeGB     = 40 // minimum free space required on target mount
 	DockerSrc     = "/var/lib/docker"
 	DaemonJSON    = "/etc/docker/daemon.json"
 	dockerDataDir = "docker-data"
