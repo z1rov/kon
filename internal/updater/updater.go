@@ -163,7 +163,7 @@ func RemoteVersion() (string, error) {
 func LocalVersion() (string, error) {
 	out, err := exec.Command(
 		"docker", "run", "--rm", "--entrypoint", "cat",
-		config.ImageName, "/version/version.txt",
+		config.ImageName, "/kon/version/version.txt",
 	).Output()
 	if err != nil {
 		return "", fmt.Errorf("image not found locally")
