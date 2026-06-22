@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/z1rov/kon/internal/docker"
+	"github.com/z1rov/kon/internal/storage"
 	"github.com/z1rov/kon/internal/ui"
 	"github.com/z1rov/kon/internal/updater"
 )
@@ -16,7 +17,7 @@ func main() {
 
 	switch os.Args[1] {
 
-	// ─── Container ─────────────────────────────────────────────────
+	// ─── Container ─────────────────────────────────────────────────────────────
 	case "start":
 		docker.Start()
 
@@ -37,7 +38,7 @@ func main() {
 		}
 		docker.Exec(os.Args[2:])
 
-	// ─── Image ──────────────────────────────────────────────────────
+	// ─── Image ─────────────────────────────────────────────────────────────────
 	case "install":
 		updater.Install()
 
@@ -50,7 +51,14 @@ func main() {
 	case "version":
 		updater.Version()
 
-	// ─── General ────────────────────────────────────────────────────
+	// ─── System ────────────────────────────────────────────────────────────────
+	case "relocate":
+		if err := storage.Relocate(); err != nil {
+			ui.Error(err.Error())
+			os.Exit(1)
+		}
+
+	// ─── General ───────────────────────────────────────────────────────────────
 	case "help", "--help", "-h":
 		ui.Usage()
 

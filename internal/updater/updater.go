@@ -15,8 +15,6 @@ import (
 	"github.com/z1rov/kon/internal/ui"
 )
 
-// ─── Install ─────────────────────────────────────────────────────────
-
 func Install() {
 	spin := ui.NewSpinner("fetching version")
 	remote, _ := RemoteVersion()
@@ -25,11 +23,13 @@ func Install() {
 	ui.Banner()
 	fmt.Printf("  %s[Info]%s installing %s\n\n", ui.ClrInfo, ui.ClrReset, config.ImageName)
 
-	// Check / migrate storage before pulling
 	ui.StorageStep("Checking available disk space…")
 	if err := storage.EnsureSpace(); err != nil {
-		ui.StorageWarn("storage check failed: " + err.Error())
-		// Non-fatal: attempt pull anyway
+		ui.StorageErr(err.Error())
+		fmt.Println()
+		ui.Divider()
+		fmt.Println()
+		os.Exit(1)
 	}
 	fmt.Println()
 
@@ -48,8 +48,6 @@ func Install() {
 	ui.Divider()
 	fmt.Println()
 }
-
-// ─── Update ──────────────────────────────────────────────────────────
 
 func Update() {
 	spin := ui.NewSpinner("checking versions")
@@ -100,10 +98,13 @@ func Update() {
 		ui.ClrOk, remote, ui.ClrReset)
 	fmt.Println()
 
-	// Check / migrate storage before pulling the new image
 	ui.StorageStep("Checking available disk space…")
 	if err := storage.EnsureSpace(); err != nil {
-		ui.StorageWarn("storage check failed: " + err.Error())
+		ui.StorageErr(err.Error())
+		fmt.Println()
+		ui.Divider()
+		fmt.Println()
+		os.Exit(1)
 	}
 	fmt.Println()
 
@@ -112,7 +113,6 @@ func Update() {
 		os.Exit(1)
 	}
 
-	// Aggressive cleanup: remove ALL dangling images, not just one.
 	fmt.Println()
 	fmt.Printf("  %s[Info]%s Cleaning up old image layers…\n", ui.ClrInfo, ui.ClrReset)
 	docker.PruneImages()
@@ -127,8 +127,6 @@ func Update() {
 	fmt.Println()
 }
 
-// ─── Version ─────────────────────────────────────────────────────────
-
 func Version() {
 	spin := ui.NewSpinner("fetching versions")
 	remote, errR := RemoteVersion()
@@ -137,8 +135,6 @@ func Version() {
 
 	ui.VersionScreen(local, errL == nil, remote, errR == nil)
 }
-
-// ─── Version helpers ─────────────────────────────────────────────────
 
 func RemoteVersion() (string, error) {
 	client := &http.Client{Timeout: 10 * time.Second}
