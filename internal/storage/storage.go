@@ -1,7 +1,7 @@
 // Package storage handles Docker data-root relocation.
 //
 // EnsureSpace  — checks free space on the current Docker root (read-only, no side effects).
-// Relocate     — moves Docker data-root to ~/docker-data/docker and updates daemon.json.
+// Relocate     — moves Docker data-root to /home/docker-data and updates daemon.json.
 package storage
 
 import (
@@ -25,6 +25,10 @@ const (
 	DockerSrc     = "/var/lib/docker"
 	DaemonJSON    = "/etc/docker/daemon.json"
 	dockerDataDir = "docker-data"
+	// HomeRoot is the shared base directory for relocated Docker/containerd
+	// data. Kept directly under /home (not inside any single user's home)
+	// so it isn't tangled up with one user's personal files.
+	HomeRoot = "/home"
 )
 
 // MountPoint represents a filesystem mount with free space info.
@@ -68,9 +72,9 @@ func EnsureSpace() error {
 
 // ─── Relocate ──────────────────────────────────────────────────────────────────
 //
-// Moves the Docker data-root to ~/docker-data/docker (home directory of the
-// invoking user, resolved via SUDO_USER → HOME → /etc/passwd fallback).
-// Also verifies the user belongs to the docker group.
+// Moves the Docker data-root to /home/docker-data (a shared location directly
+// under /home, not nested inside any individual user's home directory).
+// Also verifies the invoking user belongs to the docker group.
 func Relocate() error {
 	// Must run as root — systemctl stop/start docker requires it.
 	if os.Getuid() != 0 {
@@ -86,13 +90,16 @@ func Relocate() error {
 	ui.Banner()
 	fmt.Printf("  %s[Info]%s Docker + containerd relocation\n", ui.ClrInfo, ui.ClrReset)
 
-	// ── 1. Resolve target home dir ──────────────────────────────────────────
-	homeDir, userName, err := resolveHome()
+	// ── 1. Resolve invoking user (for the docker-group check) ───────────────
+	_, userName, err := resolveHome()
 	if err != nil {
-		return fmt.Errorf("could not resolve home directory: %w", err)
+		return fmt.Errorf("could not resolve invoking user: %w", err)
 	}
-	dstDocker     := filepath.Join(homeDir, dockerDataDir, "docker")
-	dstContainerd := filepath.Join(homeDir, dockerDataDir, "containerd")
+
+	// Target lives directly under /home — shared, not nested inside any
+	// one user's personal directory.
+	dstDocker     := filepath.Join(HomeRoot, dockerDataDir, "docker")
+	dstContainerd := filepath.Join(HomeRoot, dockerDataDir, "containerd")
 
 	ui.StorageKV("user:", userName)
 	ui.StorageKV("docker target:", dstDocker)
@@ -127,7 +134,7 @@ func Relocate() error {
 	// Space estimate: sum of both sources + 5 GB buffer
 	dockerSizeGB     := dirSizeGB(currentDocker)
 	containerdSizeGB := dirSizeGB(currentContainerd)
-	freeOnTarget     := freeSpaceGB(homeDir)
+	freeOnTarget     := freeSpaceGB(HomeRoot)
 	needed           := dockerSizeGB + containerdSizeGB + 5
 
 	ui.StorageKV("docker size:", fmt.Sprintf("~%d GB", dockerSizeGB))
@@ -135,7 +142,7 @@ func Relocate() error {
 	ui.StorageKV("free on target:", fmt.Sprintf("%d GB", freeOnTarget))
 
 	if freeOnTarget < needed {
-		return fmt.Errorf("not enough space on %s — need ~%d GB, have %d GB", homeDir, needed, freeOnTarget)
+		return fmt.Errorf("not enough space on %s — need ~%d GB, have %d GB", HomeRoot, needed, freeOnTarget)
 	}
 	ui.StorageOk(fmt.Sprintf("space check passed (%d GB needed, %d GB available)", needed, freeOnTarget))
 
@@ -227,8 +234,10 @@ func checkDockerGroup(userName string) error {
 
 // ─── Home resolution ───────────────────────────────────────────────────────────
 
-// resolveHome returns (homeDir, userName, error).
-// Prefers SUDO_USER so `sudo kon relocate` resolves the real user's home.
+// resolveHome returns (homeDir, userName, error) for the invoking user.
+// Prefers SUDO_USER so `sudo kon relocate` resolves the real user, not root.
+// homeDir is kept for informational purposes — actual relocation targets now
+// live under HomeRoot ("/home"), not inside this directory.
 func resolveHome() (string, string, error) {
 	// When run via sudo, SUDO_USER holds the original user
 	if sudoUser := os.Getenv("SUDO_USER"); sudoUser != "" {
