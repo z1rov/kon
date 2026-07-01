@@ -114,7 +114,7 @@ func Banner() {
 	printAsciiArt()
 	fmt.Println()
 	fmt.Printf("  %s[Meta]%s Created by z1rov\n", clrMeta, clrReset)
-	fmt.Printf("  %s[Meta]%s %shttps://zirov.xyz%s\n", clrMeta, clrReset, clrDim, clrReset)
+	fmt.Printf("  %s[Meta]%s %shttps://www.zirov.net%s\n", clrMeta, clrReset, clrDim, clrReset)
 	fmt.Println()
 }
 
@@ -133,7 +133,7 @@ func StartScreen(anvil string) {
 	fmt.Printf("\n\n")
 
 	fmt.Printf("  %s[Meta]%s Created by z1rov\n", clrMeta, clrReset)
-	fmt.Printf("  %s[Meta]%s %shttps://zirov.xyz%s\n", clrMeta, clrReset, clrDim, clrReset)
+	fmt.Printf("  %s[Meta]%s %shttps://www.zirov.net%s\n", clrMeta, clrReset, clrDim, clrReset)
 	fmt.Println()
 	fmt.Printf("  %s[Info]%s Initializing container services:\n", clrInfo, clrReset)
 	fmt.Printf("  %s[%-13s]%s%s::Network    host%s\n", clrInfo, "host", clrReset, clrDim, clrReset)
@@ -232,7 +232,7 @@ func Usage() {
 	fmt.Printf("        \033[38;5;226mIsolated\033[0m\n\n")
 
 	fmt.Printf("  %s[Meta]%s Created by z1rov\n", clrMeta, clrReset)
-	fmt.Printf("  %s[Meta]%s %shttps://zirov.xyz%s\n", clrMeta, clrReset, clrDim, clrReset)
+	fmt.Printf("  %s[Meta]%s %shttps://www.zirov.net%s\n", clrMeta, clrReset, clrDim, clrReset)
 	fmt.Println()
 	fmt.Printf("  %s[Info]%s Usage: kon <command>\n", clrInfo, clrReset)
 	fmt.Println()
