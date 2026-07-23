@@ -1,3 +1,4 @@
+// Author: z1rov
 package storage
 
 import (
@@ -13,7 +14,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/z1rov/kon/internal/ui"
+	"github.com/z1rov/z1/internal/ui"
 )
 
 const (
@@ -52,7 +53,7 @@ func EnsureSpace() error {
 		return nil
 	}
 
-	return fmt.Errorf("only %d GB free on %s (need %d GB) - run: kon relocate", freeGB, currentRoot, MinFreeGB)
+	return fmt.Errorf("only %d GB free on %s (need %d GB) - run: z1 relocate", freeGB, currentRoot, MinFreeGB)
 }
 
 func Relocate() error {
@@ -60,7 +61,7 @@ func Relocate() error {
 		ui.Banner()
 		ui.StorageErr("this command requires root privileges")
 		fmt.Printf("\n  %s[Fix]%s Re-run as:\n\n", ui.ClrInfo, ui.ClrReset)
-		fmt.Printf("    %ssudo kon relocate%s\n\n", ui.ClrOk, ui.ClrReset)
+		fmt.Printf("    %ssudo z1 relocate%s\n\n", ui.ClrOk, ui.ClrReset)
 		ui.Divider()
 		fmt.Println()
 		return fmt.Errorf("not running as root")

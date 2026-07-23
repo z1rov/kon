@@ -1,3 +1,4 @@
+// Author: z1rov
 package docker
 
 import (
@@ -6,15 +7,15 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/z1rov/kon/internal/config"
-	"github.com/z1rov/kon/internal/ui"
+	"github.com/z1rov/z1/internal/config"
+	"github.com/z1rov/z1/internal/ui"
 )
 
 func Start() {
 	ui.StartHeader()
 
 	if !ImageExists() {
-		ui.Error("image not found locally — run: kon install")
+		ui.Error("image not found locally — run: z1 install")
 		os.Exit(1)
 	}
 
@@ -43,7 +44,7 @@ func Start() {
 		"run", "-dit",
 		"--name", config.ContainerName,
 		"--network", "host",
-		"--hostname", "kon",
+		"--hostname", "z1",
 		"--cap-add", "SYS_TIME",
 		"--security-opt", "seccomp=unconfined",
 		"-e", "DISPLAY=" + display,
@@ -70,7 +71,7 @@ func resolveX11() (string, string) {
 	display := os.Getenv("DISPLAY")
 	if display == "" {
 		display = ":0"
-		ui.Warn("$DISPLAY not set — falling back to :0 (try: sudo -E kon start)")
+		ui.Warn("$DISPLAY not set — falling back to :0 (try: sudo -E z1 start)")
 	}
 
 	xauth := os.Getenv("XAUTHORITY")
@@ -121,7 +122,7 @@ func Stop() {
 
 func Status() {
 	if !Exists() {
-		ui.Warn("container does not exist — run: kon start")
+		ui.Warn("container does not exist — run: z1 start")
 		return
 	}
 
@@ -136,7 +137,7 @@ func Status() {
 
 func Logs(follow bool) {
 	if !Exists() {
-		ui.Error("container does not exist — run: kon start")
+		ui.Error("container does not exist — run: z1 start")
 		os.Exit(1)
 	}
 
@@ -154,7 +155,7 @@ func Logs(follow bool) {
 
 func Exec(args []string) {
 	if !IsRunning() {
-		ui.Error("container is not running — run: kon start")
+		ui.Error("container is not running — run: z1 start")
 		os.Exit(1)
 	}
 
@@ -234,7 +235,7 @@ func FullCleanup() {
 		_ = runCmd("docker", "rm", "-f", config.ContainerName)
 	}
 	_ = runCmd("docker", "rmi", "-f", config.ImageName)
-	ui.Ok("removed kon container and image")
+	ui.Ok("removed z1 container and image")
 }
 
 func ImageExists() bool {

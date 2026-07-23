@@ -1,3 +1,4 @@
+// Author: z1rov
 package updater
 
 import (
@@ -9,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/z1rov/kon/internal/config"
-	"github.com/z1rov/kon/internal/docker"
-	"github.com/z1rov/kon/internal/storage"
-	"github.com/z1rov/kon/internal/ui"
+	"github.com/z1rov/z1/internal/config"
+	"github.com/z1rov/z1/internal/docker"
+	"github.com/z1rov/z1/internal/storage"
+	"github.com/z1rov/z1/internal/ui"
 )
 
 func Install() {
@@ -44,7 +45,7 @@ func Install() {
 		ui.ClrDimStr, ui.ClrReset,
 		ui.ClrOk, remote, ui.ClrReset)
 	fmt.Println()
-	ui.Ok("kon installed — run: kon start")
+	ui.Ok("z1 installed — run: z1 start")
 	ui.Divider()
 	fmt.Println()
 }
@@ -68,7 +69,7 @@ func Update() {
 			ui.ClrDimStr, ui.ClrReset,
 			ui.ClrErr, "not installed", ui.ClrReset)
 		fmt.Println()
-		ui.Warn("no local image found — run: kon install")
+		ui.Warn("no local image found — run: z1 install")
 		ui.Divider()
 		fmt.Println()
 		os.Exit(1)
@@ -159,7 +160,7 @@ func RemoteVersion() (string, error) {
 func LocalVersion() (string, error) {
 	out, err := exec.Command(
 		"docker", "run", "--rm", "--entrypoint", "cat",
-		config.ImageName, "/kon/version/version.txt",
+		config.ImageName, "/z1/version/version.txt",
 	).Output()
 	if err != nil {
 		return "", fmt.Errorf("image not found locally")

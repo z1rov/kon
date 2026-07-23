@@ -1,3 +1,4 @@
+// Author: z1rov
 package ui
 
 import (
@@ -9,38 +10,37 @@ import (
 )
 
 const (
-	colorCyan   = "\033[38;5;51m"
-	colorGreen  = "\033[38;5;46m"
-	colorRed    = "\033[38;5;196m"
-	colorPurple = "\033[38;5;201m"
-	colorDim    = "\033[2m"
-	colorBold   = "\033[1m"
-	colorReset  = "\033[0m"
+	colorEmerald = "\033[38;5;35m"
+	colorLime    = "\033[38;5;118m"
+	colorTeal    = "\033[38;5;29m"
+	colorDim     = "\033[2m"
+	colorBold    = "\033[1m"
+	colorReset   = "\033[0m"
 
-	clrInfo  = "\033[38;5;196m"
-	clrOk    = "\033[38;5;82m"
-	clrWarn  = "\033[38;5;51m"
-	clrErr   = "\033[38;5;197m"
-	clrMeta  = "\033[38;5;201m"
-	clrAcct  = "\033[38;5;208m"
+	clrInfo  = "\033[38;5;35m"
+	clrOk    = "\033[38;5;46m"
+	clrWarn  = "\033[38;5;118m"
+	clrErr   = "\033[1;38;5;40m"
+	clrMeta  = "\033[38;5;29m"
+	clrAcct  = "\033[38;5;82m"
 	clrDim   = "\033[2m"
 	clrBold  = "\033[1m"
 	clrReset = "\033[0m"
 )
 
 const (
-	ClrOk     = "\033[38;5;82m"
-	ClrWarn   = "\033[38;5;51m"
-	ClrErr    = "\033[38;5;197m"
-	ClrInfo   = "\033[38;5;196m"
-	ClrMeta   = "\033[38;5;201m"
+	ClrOk     = "\033[38;5;46m"
+	ClrWarn   = "\033[38;5;118m"
+	ClrErr    = "\033[1;38;5;40m"
+	ClrInfo   = "\033[38;5;35m"
+	ClrMeta   = "\033[38;5;29m"
 	ClrDimStr = "\033[2m"
 	ClrReset  = "\033[0m"
 )
 
-const RepoURL = "https://github.com/z1rov/kon"
+const RepoURL = "https://github.com/z1rov/z1"
 
-var reds = []string{"52", "88", "124", "160", "196", "203"}
+var greens = []string{"22", "28", "34", "40", "46", "82"}
 
 func Info(msg string) {
 	fmt.Printf("  %s[*]%s %s\n", clrInfo, clrReset, msg)
@@ -84,11 +84,12 @@ func KV(key, value, valueColor string) {
 
 func printAsciiArt() {
 	artLines := []string{
-		"     ┌──┐┌──┐┌───────┐┌──┐┌──┐",
-		"     │  └┘  ││   ┬   ││  └─┤  │",
-		"     │    ┌─┘│   │   ││  ┌─┘  │",
-		"     │  ┌┤  ││   ┴   ││  │└┐  │",
-		"     └──┘└──┘└───────┘└──┘ └──┘",
+		"     ███████╗ ██╗",
+		"     ╚══███╔╝███║",
+		"       ███╔╝ ╚██║",
+		"      ███╔╝   ██║",
+		"     ███████╗ ██║",
+		"     ╚══════╝ ╚═╝",
 	}
 	maxWidth := 0
 	for _, line := range artLines {
@@ -97,7 +98,7 @@ func printAsciiArt() {
 		}
 	}
 	for i, line := range artLines {
-		color := reds[i%len(reds)]
+		color := greens[i%len(greens)]
 		fmt.Printf("  \033[38;5;%sm%-*s\033[0m\n", color, maxWidth, line)
 	}
 }
@@ -121,8 +122,8 @@ func StartScreen(anvil string) {
 	printAsciiArt()
 
 	fmt.Printf("        ")
-	for _, ch := range "Attack" {
-		fmt.Printf("\033[38;5;226m%c\033[0m", ch)
+	for _, ch := range "Isolated" {
+		fmt.Printf("\033[38;5;118m%c\033[0m", ch)
 		time.Sleep(80 * time.Millisecond)
 	}
 	fmt.Printf("\n\n")
@@ -140,7 +141,7 @@ func StartScreen(anvil string) {
 
 func GoodbyeScreen() {
 	fmt.Println()
-	fmt.Printf("  %s[kon]%s %sSession ended.%s\n", clrInfo, clrReset, clrBold, clrReset)
+	fmt.Printf("  %s[z1]%s %sSession ended.%s\n", clrInfo, clrReset, clrBold, clrReset)
 	fmt.Printf("  %s[*]%s Hope the hunt was good. Stay safe out there.\n", clrDim, clrReset)
 	fmt.Println()
 }
@@ -195,10 +196,10 @@ func LayerLine(id, status string) {
 		color = clrOk
 		icon = "✔"
 	case strings.Contains(lower, "pulling"):
-		color = colorCyan
+		color = colorEmerald
 		icon = "↓"
 	case strings.Contains(lower, "extract"):
-		color = colorPurple
+		color = colorTeal
 		icon = "⧗"
 	case strings.Contains(lower, "verif"):
 		color = clrMeta
@@ -215,11 +216,11 @@ func LayerLine(id, status string) {
 func Usage(imageInstalled, containerRunning bool) {
 	fmt.Println()
 	printAsciiArt()
-	fmt.Printf("        \033[38;5;226mIsolated\033[0m\n\n")
+	fmt.Printf("        \033[38;5;118mIsolated\033[0m\n\n")
 
 	printMeta()
 	fmt.Println()
-	fmt.Printf("  %s[Info]%s Usage: kon <command>\n", clrInfo, clrReset)
+	fmt.Printf("  %s[Info]%s Usage: z1 <command>\n", clrInfo, clrReset)
 	fmt.Println()
 
 	imgState, imgColor := "not installed", clrErr
@@ -241,10 +242,10 @@ func Usage(imageInstalled, containerRunning bool) {
 		entries []entry
 	}{
 		{
-			"container", "196",
+			"container", "40",
 			[]entry{
-				{"start", "start kon container"},
-				{"stop", "stop kon container"},
+				{"start", "start z1 container"},
+				{"stop", "stop z1 container"},
 				{"status", "show container status"},
 				{"logs", "show container logs"},
 				{"logs -f", "follow container logs"},
@@ -252,10 +253,10 @@ func Usage(imageInstalled, containerRunning bool) {
 			},
 		},
 		{
-			"image", "201",
+			"image", "29",
 			[]entry{
-				{"install", "pull kon image"},
-				{"update", "update kon image"},
+				{"install", "pull z1 image"},
+				{"update", "update z1 image"},
 				{"delete", "remove all images & containers"},
 				{"version", "show version info"},
 			},
@@ -269,7 +270,7 @@ func Usage(imageInstalled, containerRunning bool) {
 			},
 		},
 		{
-			"general", "220",
+			"general", "118",
 			[]entry{
 				{"help", "show this help"},
 			},
@@ -326,7 +327,7 @@ func VersionScreen(local string, localOk bool, remote string, remoteOk bool) {
 		if local == remote {
 			fmt.Printf("  %s[Info]%s %sup to date%s\n", clrInfo, clrReset, clrBold, clrReset)
 		} else {
-			fmt.Printf("  %s[Warn]%s %supdate available: %s → %s — run: kon update%s\n",
+			fmt.Printf("  %s[Warn]%s %supdate available: %s → %s — run: z1 update%s\n",
 				clrWarn, clrReset, clrBold, local, remote, clrReset)
 		}
 	}
@@ -337,12 +338,12 @@ func VersionScreen(local string, localOk bool, remote string, remoteOk bool) {
 }
 
 func StartHeader() {
-	fmt.Printf("  %s[+]%s %sstarting kon container%s\n", clrOk, clrReset, clrBold, clrReset)
+	fmt.Printf("  %s[+]%s %sstarting z1 container%s\n", clrOk, clrReset, clrBold, clrReset)
 }
 
 func StartDetail(label, value string) {
 	fmt.Printf("  %s[·]%s %s%-10s%s %s%s%s\n",
-		clrDim, clrReset, clrDim, label+":", clrReset, colorCyan, value, clrReset)
+		clrDim, clrReset, clrDim, label+":", clrReset, colorEmerald, value, clrReset)
 }
 
 func StartDone() {
@@ -350,7 +351,7 @@ func StartDone() {
 }
 
 func StopHeader() {
-	fmt.Printf("  %s[~]%s %sstopping kon container%s\n", clrWarn, clrReset, clrBold, clrReset)
+	fmt.Printf("  %s[~]%s %sstopping z1 container%s\n", clrWarn, clrReset, clrBold, clrReset)
 }
 
 func StopDone() {

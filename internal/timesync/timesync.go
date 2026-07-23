@@ -1,3 +1,4 @@
+// Author: z1rov
 package timesync
 
 import (
@@ -5,14 +6,14 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/z1rov/kon/internal/config"
-	"github.com/z1rov/kon/internal/docker"
-	"github.com/z1rov/kon/internal/ui"
+	"github.com/z1rov/z1/internal/config"
+	"github.com/z1rov/z1/internal/docker"
+	"github.com/z1rov/z1/internal/ui"
 )
 
 func Sync(target string) {
 	if target == "" {
-		ui.Error("usage: kon synctime <dc-ip>")
+		ui.Error("usage: z1 synctime <dc-ip>")
 		os.Exit(1)
 	}
 
@@ -20,24 +21,24 @@ func Sync(target string) {
 		ui.Banner()
 		ui.StorageErr("this command requires root privileges")
 		fmt.Printf("\n  %s[Fix]%s Re-run as:\n\n", ui.ClrInfo, ui.ClrReset)
-		fmt.Printf("    %ssudo kon synctime %s%s\n\n", ui.ClrOk, target, ui.ClrReset)
+		fmt.Printf("    %ssudo z1 synctime %s%s\n\n", ui.ClrOk, target, ui.ClrReset)
 		ui.Divider()
 		fmt.Println()
 		os.Exit(1)
 	}
 
 	if !docker.ImageExists() {
-		ui.Error("kon image not found locally — run: kon install")
+		ui.Error("z1 image not found locally — run: z1 install")
 		os.Exit(1)
 	}
 
 	if !docker.Exists() {
-		ui.Error("kon container does not exist — run: kon start")
+		ui.Error("z1 container does not exist — run: z1 start")
 		os.Exit(1)
 	}
 
 	if !docker.IsRunning() {
-		ui.Error("kon container is not running — run: kon start")
+		ui.Error("z1 container is not running — run: z1 start")
 		os.Exit(1)
 	}
 
@@ -63,7 +64,7 @@ func Sync(target string) {
 
 	fmt.Println()
 	ui.StorageWarn("host NTP remains disabled to keep the clock aligned with the target")
-	fmt.Printf("  %s[*]%s Re-enable it when you're done with: %skon synctime restore%s\n", ui.ClrDimStr, ui.ClrReset, ui.ClrOk, ui.ClrReset)
+	fmt.Printf("  %s[*]%s Re-enable it when you're done with: %sz1 synctime restore%s\n", ui.ClrDimStr, ui.ClrReset, ui.ClrOk, ui.ClrReset)
 
 	fmt.Println()
 	ui.Divider()
@@ -75,7 +76,7 @@ func Restore() {
 		ui.Banner()
 		ui.StorageErr("this command requires root privileges")
 		fmt.Printf("\n  %s[Fix]%s Re-run as:\n\n", ui.ClrInfo, ui.ClrReset)
-		fmt.Printf("    %ssudo kon synctime restore%s\n\n", ui.ClrOk, ui.ClrReset)
+		fmt.Printf("    %ssudo z1 synctime restore%s\n\n", ui.ClrOk, ui.ClrReset)
 		ui.Divider()
 		fmt.Println()
 		os.Exit(1)

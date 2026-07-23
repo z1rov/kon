@@ -1,13 +1,14 @@
+// Author: z1rov
 package main
 
 import (
 	"os"
 
-	"github.com/z1rov/kon/internal/docker"
-	"github.com/z1rov/kon/internal/storage"
-	"github.com/z1rov/kon/internal/timesync"
-	"github.com/z1rov/kon/internal/ui"
-	"github.com/z1rov/kon/internal/updater"
+	"github.com/z1rov/z1/internal/docker"
+	"github.com/z1rov/z1/internal/storage"
+	"github.com/z1rov/z1/internal/timesync"
+	"github.com/z1rov/z1/internal/ui"
+	"github.com/z1rov/z1/internal/updater"
 )
 
 func printUsage() {
@@ -37,7 +38,7 @@ func main() {
 
 	case "exec":
 		if len(os.Args) < 3 {
-			ui.Error("usage: kon exec <command> [args...]")
+			ui.Error("usage: z1 exec <command> [args...]")
 			os.Exit(1)
 		}
 		docker.Exec(os.Args[2:])
@@ -62,7 +63,7 @@ func main() {
 
 	case "synctime":
 		if len(os.Args) < 3 {
-			ui.Error("usage: kon synctime <dc-ip> | kon synctime restore")
+			ui.Error("usage: z1 synctime <dc-ip> | z1 synctime restore")
 			os.Exit(1)
 		}
 		if os.Args[2] == "restore" {
