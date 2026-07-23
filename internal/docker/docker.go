@@ -11,6 +11,10 @@ import (
 	"github.com/z1rov/z1/internal/ui"
 )
 
+var hostDevices = []string{
+	"/dev/net/tun",
+}
+
 func Start() {
 	ui.StartHeader()
 
@@ -53,8 +57,14 @@ func Start() {
 		"-v", xauthPath + ":/root/.Xauthority:rw",
 		"-v", "/etc/hosts:/etc/hosts",
 		"-v", config.AnvilDir() + ":/anvil",
-		config.ImageName,
 	}
+
+	for _, dev := range resolveDevices() {
+		args = append(args, "--device", dev)
+		ui.StartDetail("device", dev)
+	}
+
+	args = append(args, config.ImageName)
 
 	_ = exec.Command("xhost", "+local:docker").Run()
 
@@ -65,6 +75,18 @@ func Start() {
 
 	ui.StartDone()
 	attach()
+}
+
+func resolveDevices() []string {
+	var devices []string
+	for _, dev := range hostDevices {
+		if _, err := os.Stat(dev); err == nil {
+			devices = append(devices, dev)
+		} else {
+			ui.Warn("device not found, skipping: " + dev)
+		}
+	}
+	return devices
 }
 
 func resolveX11() (string, string) {
