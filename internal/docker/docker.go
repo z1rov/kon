@@ -49,6 +49,7 @@ func Start() {
 		"--name", config.ContainerName,
 		"--network", "host",
 		"--hostname", "z1",
+		"--add-host", "z1:127.0.0.1",
 		"--user", "root",
 		"--cap-add", "SYS_TIME",
 		"--cap-add", "NET_ADMIN",
